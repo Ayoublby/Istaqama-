@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المهام اليومية - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="../index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title">المهام اليومية</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-list-check"></i> قائمة المهام</h3>
+            <div class="task-input">
+                <input type="text" id="newTaskInput" placeholder="أضف مهمة جديدة...">
+                <button class="btn" onclick="addTask()">إضافة</button>
+            </div>
+            <ul id="taskList" class="task-list">
+                <!-- سيتم ملؤها ديناميكياً -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadTasks);
+
+        function addTask() {
+            const newTaskInput = document.getElementById("newTaskInput");
+            const taskText = newTaskInput.value.trim();
+
+            if (taskText !== "") {
+                const task = { text: taskText, completed: false };
+                saveTask(task);
+                renderTask(task);
+                newTaskInput.value = "";
+            }
+        }
+
+        function saveTask(task) {
+            let tasks = JSON.parse(localStorage.getItem("dailyTasks")) || [];
+            tasks.push(task);
+            localStorage.setItem("dailyTasks", JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem("dailyTasks")) || [];
+            tasks.forEach(task => renderTask(task));
+        }
+
+        function renderTask(task) {
+            const taskList = document.getElementById("taskList");
+            const listItem = document.createElement("li");
+            listItem.className = "task-item";
+            if (task.completed) {
+                listItem.classList.add("completed");
+            }
+
+            listItem.innerHTML = `
+                <input type="checkbox" ${task.completed ? "checked" : ""} onchange="toggleTaskCompletion(this, \'${task.text}\')">
+                <span>${task.text}</span>
+                <button class="delete-btn" onclick="deleteTask(this, \'${task.text}\')"><i class="fas fa-trash"></i></button>
+            `;
+            taskList.appendChild(listItem);
+        }
+
+        function toggleTaskCompletion(checkbox, taskText) {
+            let tasks = JSON.parse(localStorage.getItem("dailyTasks")) || [];
+            tasks = tasks.map(task => 
+                task.text === taskText ? { ...task, completed: checkbox.checked } : task
+            );
+            localStorage.setItem("dailyTasks", JSON.stringify(tasks));
+            checkbox.parentElement.classList.toggle("completed", checkbox.checked);
+        }
+
+        function deleteTask(button, taskText) {
+            let tasks = JSON.parse(localStorage.getItem("dailyTasks")) || [];
+            tasks = tasks.filter(task => task.text !== taskText);
+            localStorage.setItem("dailyTasks", JSON.stringify(tasks));
+            button.parentElement.remove();
+        }
+    </script>
+    <style>
+        .task-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .task-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .task-input .btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: #0d9488;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        .task-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            accent-color: #0d9488;
+        }
+        .task-item span {
+            flex-grow: 1;
+            font-size: 16px;
+        }
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .task-item .delete-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</body>
+</html>
+

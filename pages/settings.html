@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="../index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title">الإعدادات</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="card settings-section">
+            <div class="developer-info">
+                <img src="../assets/images/istiqaama_logo.png" alt="المطور" class="developer-avatar-large">
+                <div class="devloper-details">
+                    <h2>Istaqama</h2>
+                    <h3>جميع الحقوق محفوظة بواسطة فريق استقامة © 2025</h3>
+                    <div style="margin-top: 10px;">
+                        <p style="color: var(--text-secondary); font-size: 14px;">فريق التطوير:</p>
+                        <p style="color: var(--text-color); font-weight: 500;">AYØUB</p>
+                        <p style="color: var(--text-color); font-weight: 500;">Salem Thabet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-section">
+            <h3><i class="fas fa-info-circle"></i> معلومات التطبيق</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">الإصدار:</span>
+                    <span class="info-value">2.0.6</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">تاريخ الإصدار:</span>
+                    <span class="info-value">2025-08-30</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">المطور:</span>
+                    <span class="info-value">AYØUB</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-section">
+            <h3><i class="fas fa-share-alt"></i> تواصل معنا</h3>
+            <div class="contact-item">
+                <a href="mailto:ayoubly1111@gmail.com" class="contact-btn">
+                    <i class="fas fa-envelope"></i>
+                    البريد الإلكتروني
+                </a>
+                <span class="info-value" style="font-size: 13px;">ayoubly1111@gmail.com</span>
+            </div>
+            <div class="contact-item">
+                <a href="https://wa.me/2180944661136" target="_blank" class="contact-btn">
+                    <i class="fab fa-whatsapp"></i>
+                    الهاتف
+                </a>
+                <span class="info-value">1136 466 094 218+</span>
+            </div>
+        </div>
+
+        <div class="card settings-section">
+            <h3><i class="fas fa-cog"></i> إعدادات التطبيق</h3>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <i class="fas fa-moon"></i>
+                    <span>الوضع المظلم</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <i class="fas fa-bell"></i>
+                    <span>إشعارات الصلاة</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="prayerNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تبديل الوضع المظلم
+        function toggleDarkMode() {
+            const isDarkMode = document.getElementById("darkModeToggle").checked;
+            document.body.classList.toggle("dark-mode", isDarkMode);
+            localStorage.setItem("darkMode", isDarkMode);
+            
+            // إشعار الصفحات الأخرى بالتغيير
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'darkMode',
+                newValue: isDarkMode.toString()
+            }));
+        }
+
+        // تحميل إعدادات الوضع المظلم
+        document.addEventListener("DOMContentLoaded", function() {
+            const isDarkMode = localStorage.getItem("darkMode") === "true";
+            document.getElementById("darkModeToggle").checked = isDarkMode;
+            document.body.classList.toggle("dark-mode", isDarkMode);
+        });
+
+        // مزامنة الوضع المظلم عبر جميع الصفحات
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'darkMode') {
+                const isDarkMode = e.newValue === 'true';
+                document.body.classList.toggle('dark-mode', isDarkMode);
+                document.getElementById("darkModeToggle").checked = isDarkMode;
+            }
+        });
+
+        // وظائف المحفوظات
+        function saveBookmark(type, data) {
+            let bookmarks = JSON.parse(localStorage.getItem('istaqama_bookmarks') || '[]');
+            const bookmark = {
+                id: Date.now(),
+                type: type,
+                data: data,
+                timestamp: new Date().toISOString()
+            };
+            bookmarks.push(bookmark);
+            localStorage.setItem('istaqama_bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function getBookmarks() {
+            return JSON.parse(localStorage.getItem('istaqama_bookmarks') || '[]');
+        }
+
+        function removeBookmark(id) {
+            let bookmarks = getBookmarks();
+            bookmarks = bookmarks.filter(bookmark => bookmark.id !== id);
+            localStorage.setItem('istaqama_bookmarks', JSON.stringify(bookmarks));
+        }
+
+        // تصدير وظائف المحفوظات للاستخدام العام
+        window.BookmarkManager = {
+            save: saveBookmark,
+            get: getBookmarks,
+            remove: removeBookmark
+        };
+    </script>
+
+
+</body>
+</html>
+

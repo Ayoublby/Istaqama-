@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الأذكار اليومية - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="../index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title">الأذكار اليومية</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="azkar-categories" id="azkarCategories">
+            <!-- Azkar categories will be loaded here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        let azkarData = {};
+
+        // تحميل بيانات الأذكار من API الجديد
+        async function loadAzkarData() {
+            try {
+                const response = await fetch('../assets/data/adhkar_new.json');
+                const data = await response.json();
+                
+                // تحويل البيانات إلى التنسيق المطلوب
+                data.forEach(category => {
+                    azkarData[category.category] = category.array;
+                });
+                
+                displayCategories();
+            } catch (error) {
+                console.error('خطأ في تحميل بيانات الأذكار:', error);
+            }
+        }
+
+        function displayCategories() {
+            const azkarCategoriesDiv = document.getElementById('azkarCategories');
+            const categoryIcons = {
+                'أذكار الصباح والمساء': 'fas fa-sun',
+                'أذكار النوم': 'fas fa-bed',
+                'أذكار الاستيقاظ من النوم': 'fas fa-clock',
+                'أذكار الطعام': 'fas fa-utensils',
+                'أذكار السفر': 'fas fa-plane',
+                'أذكار دخول المنزل والخروج منه': 'fas fa-home',
+                'أذكار الوضوء': 'fas fa-tint',
+                'أذكار الصلاة': 'fas fa-pray',
+                'أذكار المسجد': 'fas fa-mosque',
+                'أذكار الاستغفار والتوبة': 'fas fa-praying-hands',
+                'أذكار الحج والعمرة': 'fas fa-kaaba',
+                'أذكار متفرقة': 'fas fa-random',
+                'أدعية من القرآن والسنة': 'fas fa-book-open',
+                'أذكار الخلاء': 'fas fa-restroom',
+                'أذكار الجماع': 'fas fa-heart',
+                'أذكار الغضب': 'fas fa-angry',
+                'أذكار الخوف والقلق': 'fas fa-shield-alt',
+                'أذكار المرض': 'fas fa-medkit',
+                'أذكار الموت': 'fas fa-cross',
+                'أذكار التعزية': 'fas fa-hands',
+                'أذكار الزواج': 'fas fa-ring',
+                'أذكار المولود الجديد': 'fas fa-baby',
+                'أذكار الطقس': 'fas fa-cloud-rain',
+                'أذكار الحيوانات': 'fas fa-paw',
+                'أذكار النظر في المرآة': 'fas fa-mirror',
+                'أذكار اللباس': 'fas fa-tshirt'
+            };
+
+            azkarCategoriesDiv.innerHTML = '';
+
+            for (const category in azkarData) {
+                if (azkarData.hasOwnProperty(category)) {
+                    const categoryCard = document.createElement('a');
+                    categoryCard.href = `azkar-category.html?category=${encodeURIComponent(category)}`;
+                    categoryCard.classList.add('category-card');
+
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.classList.add('category-header');
+
+                    const categoryInfo = document.createElement('div');
+                    categoryInfo.classList.add('category-info');
+                    const h3 = document.createElement('h3');
+                    h3.textContent = category;
+                    const p = document.createElement('p');
+                    p.textContent = `${azkarData[category].length} ذكر`;
+                    categoryInfo.appendChild(h3);
+                    categoryInfo.appendChild(p);
+
+                    const categoryIconDiv = document.createElement('div');
+                    categoryIconDiv.classList.add('category-icon');
+                    const iconClass = categoryIcons[category] || 'fas fa-book';
+                    const i = document.createElement('i');
+                    i.className = iconClass;
+                    categoryIconDiv.appendChild(i);
+
+                    categoryHeader.appendChild(categoryInfo);
+                    categoryHeader.appendChild(categoryIconDiv);
+                    categoryCard.appendChild(categoryHeader);
+                    azkarCategoriesDiv.appendChild(categoryCard);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAzkarData();
+        });
+    </script>
+</body>
+</html>
+
+

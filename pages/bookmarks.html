@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحفوظات - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="../index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title">المحفوظات</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div id="bookmarksContent">
+            <!-- سيتم ملؤها ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadBookmarks);
+
+        function loadBookmarks() {
+            const bookmarksContent = document.getElementById("bookmarksContent");
+            bookmarksContent.innerHTML = "";
+
+            let bookmarks = JSON.parse(localStorage.getItem("azkarBookmarks")) || [];
+
+            if (bookmarks.length === 0) {
+                bookmarksContent.innerHTML = `
+                    <div class="card">
+                        <p style="text-align: center; color: #666;">
+                            لا توجد محفوظات حالياً. ابدأ بحفظ الأذكار أو الآيات!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            bookmarks.forEach((bookmark, index) => {
+                const bookmarkCard = document.createElement("div");
+                bookmarkCard.className = "card";
+                bookmarkCard.innerHTML = `
+                    <p class="verse-text" style="font-size: 18px;">${bookmark.text}</p>
+                    <div style="text-align: center; margin-top: 10px; color: #888; font-size: 14px;">
+                        ${bookmark.category ? `الفئة: ${bookmark.category} - ` : ``}
+                        تم الحفظ في: ${new Date(bookmark.timestamp).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })}
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                        <button class="btn" onclick="copyToClipboard(\`${bookmark.text}\`)" style="background: #0d9488;">نسخ <i class="fas fa-copy"></i></button>
+                        <button class="btn" onclick="shareContent(\`${bookmark.text}\`)" style="background: #14b8a6;">مشاركة <i class="fas fa-share-alt"></i></button>
+                        <button class="btn" onclick="deleteBookmark(${index})" style="background: #ef4444;">حذف <i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                bookmarksContent.appendChild(bookmarkCard);
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("تم النسخ إلى الحافظة!");
+            }).catch(err => {
+                console.error("فشل النسخ: ", err);
+            });
+        }
+
+        function shareContent(text) {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    text: text,
+                }).catch(error => console.error("فشل المشاركة: ", error));
+            } else {
+                alert("المشاركة غير مدعومة في متصفحك. يمكنك استخدام زر النسخ بدلاً من ذلك.");
+            }
+        }
+
+        function deleteBookmark(index) {
+            let bookmarks = JSON.parse(localStorage.getItem("azkarBookmarks")) || [];
+            if (confirm("هل أنت متأكد أنك تريد حذف هذا المحفوظ؟")) {
+                bookmarks.splice(index, 1);
+                localStorage.setItem("azkarBookmarks", JSON.stringify(bookmarks));
+                loadBookmarks(); // إعادة تحميل المحفوظات بعد الحذف
+                alert("تم حذف المحفوظ بنجاح.");
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أذكار - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="azkar.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title" id="azkarCategoryTitle"></div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div id="azkarContent">
+            <!-- سيتم ملؤها ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        let azkarData = {};
+        let currentAudio = null;
+
+        // إضافة أنماط الوضع المظلم
+        document.addEventListener("DOMContentLoaded", function() {
+            const isDarkMode = localStorage.getItem("darkMode") === "true";
+            if (isDarkMode) {
+                document.body.classList.add("dark-mode");
+            }
+            loadAzkarData();
+        });
+
+        // مزامنة الوضع المظلم
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'darkMode') {
+                const isDarkMode = e.newValue === 'true';
+                document.body.classList.toggle('dark-mode', isDarkMode);
+            }
+        });
+
+        // تحميل بيانات الأذكار من API الجديد
+        async function loadAzkarData() {
+            // إظهار مؤشر التحميل
+            const azkarContent = document.getElementById("azkarContent");
+            azkarContent.innerHTML = `
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+                    <p>جاري تحميل الأذكار...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('../assets/data/adhkar_new.json');
+                const data = await response.json();
+                
+                // تحويل البيانات إلى التنسيق المطلوب
+                data.forEach(category => {
+                    azkarData[category.category] = category.array;
+                });
+                
+                displayCategoryAzkar();
+            } catch (error) {
+                console.error('خطأ في تحميل بيانات الأذكار:', error);
+                azkarContent.innerHTML = `
+                    <div class="card" style="text-align: center; color: #ef4444;">
+                        <p>عذراً، حدث خطأ في تحميل الأذكار. يرجى المحاولة مرة أخرى.</p>
+                        <button class="btn" onclick="loadAzkarData()" style="margin-top: 15px; background: #0d9488; color: white;">
+                            إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayCategoryAzkar() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get("category");
+            const azkarContent = document.getElementById("azkarContent");
+
+            if (!categoryParam || !azkarData[categoryParam]) {
+                document.getElementById("azkarCategoryTitle").textContent = "فئة غير موجودة";
+                azkarContent.innerHTML = `
+                    <div class="card">
+                        <p style="text-align: center; color: #ef4444;">
+                            عذراً، هذه الفئة من الأذكار غير متوفرة.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById("azkarCategoryTitle").textContent = categoryParam;
+
+            const filteredAzkar = azkarData[categoryParam];
+
+            if (filteredAzkar && filteredAzkar.length > 0) {
+                azkarContent.innerHTML = '';
+                filteredAzkar.forEach((dhikr, index) => {
+                    const dhikrCard = document.createElement("div");
+                    dhikrCard.className = "card";
+                    dhikrCard.innerHTML = `
+                        <p class="verse-text" style="font-size: 18px; line-height: 1.8; margin-bottom: 15px;">${dhikr.text}</p>
+                        ${dhikr.count && dhikr.count > 1 ? `<div style="text-align: center; margin-top: 10px; color: #0d9488; font-weight: bold;">عدد المرات: ${dhikr.count}</div>` : ``}
+                        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            ${dhikr.audio ? `
+                                <button class="btn play-btn" onclick="playAudio('https://raw.githubusercontent.com/rn0x/Adhkar-json/refs/heads/main${dhikr.audio}', this)" style="background: #059669; color: white; position: relative;">
+                                    <span class="play-text">تشغيل</span>
+                                    <span class="loading-spinner" style="display: none; width: 16px; height: 16px; margin-left: 5px;"></span>
+                                    <i class="fas fa-play play-icon" style="margin-left: 5px;"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn" onclick="copyToClipboard('${dhikr.text.replace(/'/g, '\\\'')}')" style="background: #0d9488; color: white;">
+                                <i class="fas fa-copy" style="margin-left: 5px;"></i> نسخ
+                            </button>
+                            <button class="btn" onclick="shareContent('${dhikr.text.replace(/'/g, '\\\')}')" style="background: #14b8a6; color: white;">
+                                <i class="fas fa-share-alt" style="margin-left: 5px;"></i> مشاركة
+                            </button>
+                            <button class="btn" onclick="addToBookmarks('${dhikr.text.replace(/'/g, '\\\')}')" style="background: #f59e0b; color: white;">
+                                <i class="fas fa-bookmark" style="margin-left: 5px;"></i> حفظ
+                            </button>
+                        </div>
+                    `;
+                    azkarContent.appendChild(dhikrCard);
+                });
+            } else {
+                azkarContent.innerHTML = `
+                    <div class="card">
+                        <p style="text-align: center; color: #666;">
+                            لا توجد أذكار لهذه الفئة حالياً.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        function playAudio(url, button) {
+            const playText = button.querySelector('.play-text');
+            const loadingSpinner = button.querySelector('.loading-spinner');
+            const playIcon = button.querySelector('.play-icon');
+
+            // إيقاف أي صوت يعمل حالياً
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                // إعادة تعيين جميع الأزرار
+                document.querySelectorAll('.play-btn').forEach(btn => {
+                    const text = btn.querySelector('.play-text');
+                    const spinner = btn.querySelector('.loading-spinner');
+                    const icon = btn.querySelector('.play-icon');
+                    if (text && spinner && icon) {
+                        text.style.display = 'inline';
+                        spinner.style.display = 'none';
+                        icon.style.display = 'inline';
+                        text.textContent = 'تشغيل';
+                        btn.classList.remove('loading');
+                    }
+                });
+            }
+
+            // عرض شريط التحميل
+            playText.style.display = 'none';
+            playIcon.style.display = 'none';
+            loadingSpinner.style.display = 'inline-block';
+            button.classList.add('loading');
+
+            // إنشاء عنصر الصوت
+            currentAudio = new Audio(url);
+            
+            currentAudio.addEventListener('canplay', () => {
+                // إخفاء شريط التحميل وعرض زر الإيقاف
+                loadingSpinner.style.display = 'none';
+                playText.style.display = 'inline';
+                playIcon.style.display = 'inline';
+                playText.textContent = 'إيقاف';
+                button.classList.remove('loading');
+                
+                // تشغيل الصوت
+                currentAudio.play();
+            });
+
+            currentAudio.addEventListener('ended', () => {
+                // إعادة تعيين الزر عند انتهاء التشغيل
+                playText.textContent = 'تشغيل';
+                button.classList.remove('loading');
+                currentAudio = null;
+            });
+
+            currentAudio.addEventListener('error', (e) => {
+                console.error('خطأ في تحميل الصوت:', e);
+                // إعادة تعيين الزر في حالة الخطأ
+                loadingSpinner.style.display = 'none';
+                playText.style.display = 'inline';
+                playIcon.style.display = 'inline';
+                playText.textContent = 'تشغيل';
+                button.classList.remove('loading');
+                alert('عذراً، حدث خطأ في تحميل الصوت');
+            });
+
+            // بدء تحميل الصوت
+            currentAudio.load();
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // إظهار رسالة نجاح
+                showNotification("تم النسخ إلى الحافظة!", "success");
+            }).catch(err => {
+                console.error("فشل النسخ: ", err);
+                // طريقة بديلة للنسخ
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification("تم النسخ إلى الحافظة!", "success");
+            });
+        }
+
+        function shareContent(text) {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    text: text,
+                }).catch(error => console.error("فشل المشاركة: ", error));
+            } else {
+                // نسخ النص كبديل
+                copyToClipboard(text);
+                showNotification("تم نسخ النص للمشاركة", "info");
+            }
+        }
+
+        function addToBookmarks(text) {
+            let bookmarks = JSON.parse(localStorage.getItem("azkarBookmarks")) || [];
+            const newBookmark = { text: text, timestamp: new Date().toISOString() };
+            
+            if (!bookmarks.some(b => b.text === newBookmark.text)) {
+                bookmarks.push(newBookmark);
+                localStorage.setItem("azkarBookmarks", JSON.stringify(bookmarks));
+                showNotification("تم الحفظ في المحفوظات!", "success");
+            } else {
+                showNotification("هذا الذكر موجود بالفعل في المحفوظات.", "info");
+            }
+        }
+
+        function showNotification(message, type) {
+            // إنشاء عنصر الإشعار
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-family: 'Cairo', sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            // إضافة الأنيميشن
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // إزالة الإشعار بعد 3 ثوان
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+

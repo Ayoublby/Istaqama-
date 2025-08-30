@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الكتب الدينية - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="../index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title">الكتب الدينية</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="ابحث عن كتاب..." id="bookSearch">
+        </div>
+
+        <div id="booksList">
+            <!-- سيتم ملؤها ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        const booksData = [
+            { id: "bukhari", title: "صحيح البخاري", author: "الإمام البخاري", description: "أصح الكتب بعد القرآن الكريم.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Sahih_al-Bukhari_cover.jpg/220px-Sahih_al-Bukhari_cover.jpg" },
+            { id: "muslim", title: "صحيح مسلم", author: "الإمام مسلم", description: "ثاني أصح الكتب بعد صحيح البخاري.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sahih_Muslim_cover.jpg/220px-Sahih_Muslim_cover.jpg" },
+            { id: "riyad", title: "رياض الصالحين", author: "الإمام النووي", description: "مجموعة من الأحاديث النبوية في الأخلاق والآداب.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Riyad_as-Salihin_cover.jpg/220px-Riyad_as-Salihin_cover.jpg" },
+            { id: "tirmidhi", title: "سنن الترمذي", author: "الإمام الترمذي", description: "أحد كتب السنن الستة.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Jami%27_at-Tirmidhi_cover.jpg/220px-Jami%27_at-Tirmidhi_cover.jpg" },
+            { id: "nasai", title: "سنن النسائي", author: "الإمام النسائي", description: "أحد كتب السنن الستة.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sunan_an-Nasa%27i_cover.jpg/220px-Sunan_an-Nasa%27i_cover.jpg" },
+            { id: "dawud", title: "سنن أبي داود", author: "الإمام أبو داود", description: "أحد كتب السنن الستة.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Sunan_Abi_Dawud_cover.jpg/220px-Sunan_Abi_Dawud_cover.jpg" },
+            { id: "majah", title: "سنن ابن ماجه", author: "الإمام ابن ماجه", description: "أحد كتب السنن الستة.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Sunan_Ibn_Majah_cover.jpg/220px-Sunan_Ibn_Majah_cover.jpg" },
+            { id: "ahmad", title: "مسند الإمام أحمد", author: "الإمام أحمد بن حنبل", description: "أحد أكبر كتب الحديث النبوي.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Musnad_Ahmad_cover.jpg/220px-Musnad_Ahmad_cover.jpg" },
+            { id: "muwatta", title: "موطأ الإمام مالك", author: "الإمام مالك بن أنس", description: "من أوائل كتب الحديث وأشهرها.", cover: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Muwatta_Imam_Malik_cover.jpg/220px-Muwatta_Imam_Malik_cover.jpg" }
+        ];
+
+        function displayBooks(booksToDisplay = booksData) {
+            const booksList = document.getElementById("booksList");
+            booksList.innerHTML = "";
+
+            if (booksToDisplay.length === 0) {
+                booksList.innerHTML = `
+                    <div class="card">
+                        <p style="text-align: center; color: #666;">
+                            لا توجد كتب مطابقة لبحثك.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            booksToDisplay.forEach(book => {
+                const bookCard = document.createElement("div");
+                bookCard.className = "card book-card";
+                bookCard.innerHTML = `
+                    <img src="${book.cover}" alt="${book.title}" class="book-cover">
+                    <div class="book-info">
+                        <h3>${book.title}</h3>
+                        <p class="book-author">${book.author}</p>
+                        <p class="book-description">${book.description}</p>
+                        <button class="btn" onclick="alert(\'سيتم فتح كتاب ${book.title} في صفحة جديدة.\')">قراءة الكتاب</button>
+                    </div>
+                `;
+                booksList.appendChild(bookCard);
+            });
+        }
+
+        function searchBooks() {
+            const searchTerm = document.getElementById("bookSearch").value.toLowerCase();
+            const filteredBooks = booksData.filter(book => 
+                book.title.includes(searchTerm) || 
+                book.author.includes(searchTerm) ||
+                book.description.includes(searchTerm)
+            );
+            displayBooks(filteredBooks);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            displayBooks();
+            document.getElementById("bookSearch").addEventListener("input", searchBooks);
+        });
+    </script>
+    <style>
+        .book-card {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        .book-cover {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .book-info {
+            flex-grow: 1;
+        }
+        .book-info h3 {
+            color: #0d9488;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .book-author {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .book-description {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .book-info .btn {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            background-color: #0d9488;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</body>
+</html>
+

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السورة - استقامة</title>
+    <link rel="icon" href="../assets/images/istaqama_og.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <a href="quran.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+            <div class="page-title" id="surahTitle">السورة</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <!-- مشغل الصوت وأزرار الحفظ والمشاركة -->
+        <div class="audio-player-container">
+            <div class="audio-player" id="audioPlayer">
+                <button class="play-btn" id="playBtn" onclick="toggleAudio()">
+                    <span class="loading-spinner" style="display: none;"></span>
+                    <i class="fas fa-play play-icon" id="playIcon"></i>
+                </button>
+                <div class="audio-info">
+                    <p id="audioStatus">اضغط للتشغيل</p>
+                </div>
+                <audio id="audioElement" preload="none">
+                    <source id="audioSource" src="" type="audio/mpeg">
+                    متصفحك لا يدعم تشغيل الصوت
+                </audio>
+            </div>
+            <div class="action-buttons">
+                <button class="btn" onclick="saveSurah()" style="background: #f59e0b;">حفظ <i class="fas fa-bookmark"></i></button>
+                <button class="btn" onclick="shareSurah()" style="background: #14b8a6;">مشاركة <i class="fas fa-share-alt"></i></button>
+            </div>
+        </div>
+
+        <!-- محتوى السورة -->
+        <div id="surahContent">
+            <!-- سيتم ملؤها ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        let currentAudio = null;
+        let isPlaying = false;
+        let surahNumber = null;
+        let surahName = "";
+        let currentReciterId = 102;
+
+        // بيانات القراء المشهورين
+        const popularReciters = [
+            {
+                id: 102,
+                name: "ماهر المعيقلي",
+                server: "https://server12.mp3quran.net/maher/",
+                moshaf_id: 102
+            },
+            {
+                id: 106,
+                name: "محمد الطبلاوي", 
+                server: "https://server12.mp3quran.net/tblawi/",
+                moshaf_id: 106
+            },
+            {
+                id: 107,
+                name: "محمد اللحيدان",
+                server: "https://server8.mp3quran.net/lhdan/",
+                moshaf_id: 107
+            }
+        ];
+
+        // الحصول على رقم السورة من URL
+        function getSurahNumber() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return parseInt(urlParams.get("number")) || 1;
+        }
+
+        // وظيفة لتشغيل تلاوة السورة
+        function getQuranAudioUrl(surahId, reciterId = 102) {
+            const reciter = popularReciters.find(r => r.id === reciterId) || popularReciters[0];
+            
+            // تنسيق رقم السورة (001, 002, etc.)
+            const formattedSurahId = surahId.toString().padStart(3, '0');
+            
+            // رابط الملف الصوتي
+            return `${reciter.server}${formattedSurahId}.mp3`;
+        }
+
+        // وظيفة تشغيل/إيقاف الصوت
+        function toggleAudio() {
+            const playBtn = document.getElementById('playBtn');
+            const playText = playBtn.querySelector('.play-text');
+            const loadingSpinner = playBtn.querySelector('.loading-spinner');
+            const playIcon = playBtn.querySelector('.play-icon');
+            const audioStatus = document.getElementById('audioStatus');
+
+            if (currentAudio && !currentAudio.paused) {
+                // إيقاف التشغيل
+                currentAudio.pause();
+                playText.textContent = 'تشغيل';
+                playIcon.className = 'fas fa-play play-icon';
+                audioStatus.textContent = 'متوقف';
+                isPlaying = false;
+                return;
+            }
+
+            // بدء التشغيل
+            playText.style.display = 'none';
+            playIcon.style.display = 'none';
+            loadingSpinner.style.display = 'inline-block';
+            playBtn.classList.add('loading');
+            audioStatus.textContent = 'جاري التحميل...';
+
+            const audioUrl = getQuranAudioUrl(surahNumber, currentReciterId);
+            
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.addEventListener('loadstart', () => {
+                console.log('بدء تحميل التلاوة...');
+            });
+            
+            currentAudio.addEventListener('canplay', () => {
+                console.log('التلاوة جاهزة للتشغيل');
+                // إخفاء شريط التحميل وعرض زر الإيقاف
+                loadingSpinner.style.display = 'none';
+                playText.style.display = 'inline';
+                playIcon.style.display = 'inline';
+                playText.textContent = 'إيقاف';
+                playIcon.className = 'fas fa-pause play-icon';
+                playBtn.classList.remove('loading');
+                audioStatus.textContent = 'يتم التشغيل...';
+                isPlaying = true;
+                
+                // تشغيل الصوت
+                currentAudio.play();
+            });
+            
+            currentAudio.addEventListener('ended', () => {
+                console.log('انتهت التلاوة');
+                // إعادة تعيين الزر عند انتهاء التشغيل
+                playText.textContent = 'تشغيل';
+                playIcon.className = 'fas fa-play play-icon';
+                audioStatus.textContent = 'انتهت التلاوة';
+                playBtn.classList.remove('loading');
+                isPlaying = false;
+                currentAudio = null;
+            });
+
+            currentAudio.addEventListener('error', (error) => {
+                console.error('خطأ في تشغيل الصوت:', error);
+                // إعادة تعيين الزر في حالة الخطأ
+                loadingSpinner.style.display = 'none';
+                playText.style.display = 'inline';
+                playIcon.style.display = 'inline';
+                playText.textContent = 'تشغيل';
+                playIcon.className = 'fas fa-play play-icon';
+                audioStatus.textContent = 'خطأ في التشغيل';
+                playBtn.classList.remove('loading');
+                isPlaying = false;
+                showNotification('عذراً، حدث خطأ في تشغيل التلاوة. يرجى المحاولة مرة أخرى.', 'error');
+            });
+
+            // بدء تحميل الصوت
+            currentAudio.load();
+        }
+
+        // وظيفة تغيير القارئ
+        function changeReciter() {
+            const reciterSelect = document.getElementById('reciterSelect');
+            currentReciterId = parseInt(reciterSelect.value);
+            
+            // إيقاف التشغيل الحالي إذا كان يعمل
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                const playBtn = document.getElementById('playBtn');
+                const playText = playBtn.querySelector('.play-text');
+                const playIcon = playBtn.querySelector('.play-icon');
+                const audioStatus = document.getElementById('audioStatus');
+                
+                playText.textContent = 'تشغيل';
+                playIcon.className = 'fas fa-play play-icon';
+                audioStatus.textContent = 'تم تغيير القارئ';
+                isPlaying = false;
+            }
+        }
+
+        function showNotification(message, type) {
+            // إنشاء عنصر الإشعار
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-family: 'Cairo', sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            // إضافة الأنيميشن
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // إزالة الإشعار بعد 3 ثوان
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // الحصول على رقم السورة من URL
+        function getSurahNumber() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return parseInt(urlParams.get("number")) || 1;
+        }
+
+        // تحميل السورة
+        async function loadSurah() {
+            surahNumber = getSurahNumber();
+            
+            try {
+                // جلب بيانات السورة من API
+                const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/ar.alafasy`); 
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    displaySurah(data.data);
+                    setupAudio(surahNumber);
+                } else {
+                    throw new Error("فشل في تحميل السورة");
+                }
+            } catch (error) {
+                console.error("خطأ في تحميل السورة:", error);
+                document.getElementById("surahContent").innerHTML = `
+                    <div class="card">
+                        <p style="text-align: center; color: #ef4444;">
+                            عذراً، حدث خطأ في تحميل السورة. يرجى المحاولة مرة أخرى.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // عرض السورة
+        function displaySurah(surah) {
+            surahName = surah.name;
+            document.getElementById("surahTitle").textContent = surah.name;
+            document.title = `${surah.name} - استقامة`;
+            
+            const surahContent = document.getElementById("surahContent");
+            surahContent.innerHTML = "";
+
+            // إضافة الآيات
+            surah.ayahs.forEach((ayah, index) => {
+                const verseCard = document.createElement("div");
+                verseCard.className = "verse-card";
+                
+                // إزالة البسملة إذا كانت جزءًا من الآية الأولى وليست سورة التوبة
+                let verseText = ayah.text;
+                if (surah.number !== 9 && ayah.numberInSurah === 1 && verseText.includes("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ")) {
+                    verseText = verseText.replace("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "").trim();
+                }
+
+                verseCard.innerHTML = `
+                    <div class="verse-text">
+                        ${verseText}
+                        <span class="verse-number">${ayah.numberInSurah}</span>
+                    </div>
+                `;
+                
+                surahContent.appendChild(verseCard);
+            });
+        }
+
+        // إعداد الصوت
+        function setupAudio(surahNumber) {
+            const audioElement = document.getElementById("audioElement");
+            const audioSource = document.getElementById("audioSource");
+            
+            // رابط التلاوة (الشيخ ماهر المعيقلي)
+            const paddedNumber = surahNumber.toString().padStart(3, "0");
+            const audioUrl = `https://server12.mp3quran.net/maher/${paddedNumber}.mp3`; 
+            
+            audioSource.src = audioUrl;
+            audioElement.load();
+            
+            // إضافة مستمعي الأحداث
+            audioElement.addEventListener("loadstart", () => {
+                showLoadingSpinner();
+                document.getElementById("audioStatus").textContent = "جاري التحميل...";
+            });
+            
+            audioElement.addEventListener("canplay", () => {
+                hideLoadingSpinner();
+                document.getElementById("audioStatus").textContent = "اضغط للتشغيل";
+            });
+            
+            audioElement.addEventListener("play", () => {
+                isPlaying = true;
+                updatePlayButton();
+                document.getElementById("audioStatus").textContent = "جاري التشغيل...";
+            });
+            
+            audioElement.addEventListener("pause", () => {
+                isPlaying = false;
+                updatePlayButton();
+                document.getElementById("audioStatus").textContent = "متوقف";
+            });
+            
+            audioElement.addEventListener("ended", () => {
+                isPlaying = false;
+                updatePlayButton();
+                document.getElementById("audioStatus").textContent = "انتهت التلاوة";
+            });
+            
+            audioElement.addEventListener("error", (e) => {
+                console.error("Audio error:", e);
+                hideLoadingSpinner();
+                document.getElementById("audioStatus").textContent = "خطأ في تحميل الصوت";
+            });
+        }
+
+        // تبديل تشغيل الصوت
+        function toggleAudio() {
+            const audioElement = document.getElementById("audioElement");
+            
+            if (isPlaying) {
+                audioElement.pause();
+            } else {
+                showLoadingSpinner();
+                audioElement.play().catch(error => {
+                    console.error("خطأ في تشغيل الصوت:", error);
+                    hideLoadingSpinner();
+                    document.getElementById("audioStatus").textContent = "خطأ في التشغيل";
+                });
+            }
+        }
+
+        // إظهار شريط التحميل
+        function showLoadingSpinner() {
+            const spinner = document.querySelector(".loading-spinner");
+            const playIcon = document.getElementById("playIcon");
+            
+            spinner.style.display = "inline-block";
+            playIcon.style.display = "none";
+        }
+
+        // إخفاء شريط التحميل
+        function hideLoadingSpinner() {
+            const spinner = document.querySelector(".loading-spinner");
+            const playIcon = document.getElementById("playIcon");
+            
+            spinner.style.display = "none";
+            playIcon.style.display = "inline";
+        }
+
+        // تحديث زر التشغيل
+        function updatePlayButton() {
+            const playIcon = document.getElementById("playIcon");
+            hideLoadingSpinner();
+            
+            if (isPlaying) {
+                playIcon.className = "fas fa-pause";
+            } else {
+                playIcon.className = "fas fa-play";
+            }
+        }
+
+        // وظيفة الحفظ
+        function saveSurah() {
+            let bookmarks = JSON.parse(localStorage.getItem("surahBookmarks")) || [];
+            const newBookmark = { number: surahNumber, name: surahName, timestamp: new Date().toISOString() };
+            
+            if (!bookmarks.some(b => b.number === newBookmark.number)) {
+                bookmarks.push(newBookmark);
+                localStorage.setItem("surahBookmarks", JSON.stringify(bookmarks));
+                alert(`تم حفظ سورة ${surahName} في المحفوظات!`); // سيتم تحسين هذه الرسالة لاحقاً
+            } else {
+                alert(`سورة ${surahName} موجودة بالفعل في المحفوظات.`); // سيتم تحسين هذه الرسالة لاحقاً
+            }
+        }
+
+        // وظيفة المشاركة
+        function shareSurah() {
+            const surahText = document.getElementById("surahContent").innerText;
+            if (navigator.share) {
+                navigator.share({
+                    title: `سورة ${surahName} من تطبيق استقامة`,
+                    text: surahText.substring(0, 200) + "...", // Share a snippet
+                    url: window.location.href,
+                }).catch(error => console.error("فشل المشاركة: ", error));
+            } else {
+                alert("المشاركة غير مدعومة في متصفحك. يمكنك نسخ النص يدوياً."); // سيتم تحسين هذه الرسالة لاحقاً
+            }
+        }
+
+        // إيقاف الصوت عند مغادرة الصفحة
+        window.addEventListener("beforeunload", () => {
+            const audioElement = document.getElementById("audioElement");
+            if (audioElement && !audioElement.paused) {
+                audioElement.pause();
+            }
+        });
+
+        // تحميل الصفحة
+        document.addEventListener("DOMContentLoaded", function() {
+            const isDarkMode = localStorage.getItem("darkMode") === "true";
+            if (isDarkMode) {
+                document.body.classList.add("dark-mode");
+            }
+            loadSurah();
+        });
+
+        // مزامنة الوضع المظلم
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'darkMode') {
+                const isDarkMode = e.newValue === 'true';
+                document.body.classList.toggle('dark-mode', isDarkMode);
+            }
+        });
+    </script>
+</body>
+</html>
+
