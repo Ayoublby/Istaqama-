@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استقامة - تطبيق إسلامي شامل</title>
+    <link rel="icon" href="assets/images/istaqama_og.png" type="image/png">
+    <meta property="og:title" content="استقامة - تطبيق إسلامي شامل">
+    <meta property="og:description" content="استقامة هو المكان الذي تجد فيه كل ما تحتاجه عن الدين الإسلامي">
+    <meta property="og:image" content="assets/images/istaqama_og.png">
+    <link rel="icon" type="image/png" href="assets/images/istiqaama_logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- الصفحة الرئيسية -->
+    <div id="homePage" class="container">
+        <div class="header">
+            <button class="btn" onclick="window.location.href='pages/settings.html'">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="logo-container">
+                <img src="assets/images/istiqaama_logo.png" alt="استقامة" class="logo-img">
+                <span class="logo-text">استقامة</span>
+            </div>
+            <button class="btn">
+                <i class="fas fa-bell"></i>
+            </button>
+        </div>
+
+        <div class="card prayer-times">
+            <h2><i class="fas fa-clock"></i> مواقيت الصلاة - طرابلس</h2>
+            <div class="prayer-list" id="prayerList">
+                <div class="prayer-item">
+                    <span class="prayer-name">الفجر</span>
+                    <span class="prayer-time" id="fajrTime">05:23</span>
+                </div>
+                <div class="prayer-item">
+                    <span class="prayer-name">الظهر</span>
+                    <span class="prayer-time" id="dhuhrTime">12:55</span>
+                </div>
+                <div class="prayer-item">
+                    <span class="prayer-name">العصر</span>
+                    <span class="prayer-time" id="asrTime">16:31</span>
+                </div>
+                <div class="prayer-item">
+                    <span class="prayer-name">المغرب</span>
+                    <span class="prayer-time" id="maghribTime">19:20</span>
+                </div>
+                <div class="prayer-item">
+                    <span class="prayer-name">العشاء</span>
+                    <span class="prayer-time" id="ishaTime">20:27</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sections">
+            <div class="section-card" onclick="window.location.href='pages/quran.html'">
+                <div class="section-icon"><i class="fas fa-book-open"></i></div>
+                <div class="section-title">القرآن الكريم</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/azkar.html'">
+                <div class="section-icon"><i class="fas fa-pray"></i></div>
+                <div class="section-title">الأذكار اليومية</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/repentance.html'">
+                <div class="section-icon"><i class="fas fa-heart"></i></div>
+                <div class="section-title">العودة إلى الله</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/daily-tasks.html'">
+                <div class="section-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="section-title">المهام اليومية</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/guide.html'">
+                <div class="section-icon"><i class="fas fa-comments"></i></div>
+                <div class="section-title">اسأل مرشد</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/bookmarks.html'">
+                <div class="section-icon"><i class="fas fa-bookmark"></i></div>
+                <div class="section-title">المحفوظات</div>
+            </div>
+            <div class="section-card" onclick="window.location.href='pages/books.html'">
+                <div class="section-icon"><i class="fas fa-book"></i></div>
+                <div class="section-title">الكتب الدينية</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/prayer-times.js"></script>
+    <script>
+        // تحميل مواقيت الصلاة لطرابلس
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPrayerTimes();
+        });
+    </script>
+</body>
+</html>
+
+
+    <script>
+        // تحميل إعدادات الوضع المظلم
+        document.addEventListener("DOMContentLoaded", function() {
+            const isDarkMode = localStorage.getItem("darkMode") === "true";
+            if (isDarkMode) {
+                document.body.classList.add("dark-mode");
+            }
+        });
+
+        // مزامنة الوضع المظلم عبر جميع الصفحات
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'darkMode') {
+                const isDarkMode = e.newValue === 'true';
+                document.body.classList.toggle('dark-mode', isDarkMode);
+            }
+        });
+    </script>
+
